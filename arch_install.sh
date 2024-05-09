@@ -51,6 +51,7 @@ hwclock --systohc
 # Localization
 echo "LANG=en_US.UTF-8" > /etc/locale.conf
 echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
+echo "es_CL.UTF-8 UTF-8" >> /etc/locale.gen
 locale-gen
 
 # Set the console keyboard layout
@@ -78,6 +79,10 @@ grub-mkconfig -o /boot/grub/grub.cfg
 # Enable necessary services
 systemctl enable gdm
 systemctl enable NetworkManager
+
+# Set regional formats
+localectl set-locale LC_NUMERIC=es_CL.UTF-8 LC_TIME=es_CL.UTF-8 LC_MONETARY=es_CL.UTF-8 LC_PAPER=es_CL.UTF-8 LC_NAME=es_CL.UTF-8 LC_ADDRESS=es_CL.UTF-8 LC_TELEPHONE=es_CL.UTF-8 LC_MEASUREMENT=es_CL.UTF-8 LC_IDENTIFICATION=es_CL.UTF-8
+loadkeys la-latin1
 
 EOF
 
