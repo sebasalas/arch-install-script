@@ -34,34 +34,8 @@ pacstrap /mnt base linux linux-firmware base-devel gnome gnome-tweaks grub nano 
 # Generate fstab
 genfstab -U /mnt >> /mnt/etc/fstab
 
-# Get user inputs
-echo "Enter a hostname for your system:"
-read hostname
-echo "Enter a username for the primary user:"
-read username
-echo "Enter password for user $username:"
-read -s userpass
-hashed_userpass=$(openssl passwd -6 "$userpass")
-
-echo "Enter password for root user:"
-read -s rootpass
-hashed_rootpass=$(openssl passwd -6 "$rootpass")
-
 # Chroot into new system and configure further
 arch-chroot /mnt /bin/bash <<EOF
-
-# Set the hostname and network configuration
-echo "\$hostname" > /etc/hostname
-echo "127.0.0.1 localhost" >> /etc/hosts
-echo "::1       localhost" >> /etc/hosts
-echo "127.0.1.1 \$hostname.localdomain \$hostname" >> /etc/hosts
-
-# Create the new user with sudo privileges
-useradd -m -G wheel -s /bin/bash -p "\$hashed_userpass" \$username
-echo "\$username ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/\$username
-
-# Set root password
-echo "root:\$hashed_rootpass" | chpasswd
 
 # Generate swap file
 fallocate -l 8G /swapfile
@@ -82,15 +56,35 @@ locale-gen
 # Set the console keyboard layout
 echo "KEYMAP=la-latin1" > /etc/vconsole.conf
 
+# Network configuration
+echo "asus" > /etc/hostname
+echo "127.0.0.1 localhost" >> /etc/hosts
+echo "::1       localhost" >> /etc/hosts
+echo "127.0.1.1 asus.localdomain asus" >> /etc/hosts
+
+# Root password
+echo root:holahola | chpasswd
+
+# Add another user with sudo privileges
+useradd -m -G wheel -s /bin/bash sebas
+echo sebas:holahola | chpasswd
+sed -i 's/^# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers
+
 # Install and configure bootloader
 pacman -S grub --noconfirm
 grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
 grub-mkconfig -o /boot/grub/grub.cfg
 
+# Enable necessary services
+systemctl enable gdm
+systemctl enable NetworkManager
+
+# Set regional formats
+localectl set-locale LC_NUMERIC=es_CL.UTF-8 LC_TIME=es_CL.UTF-8 LC_MONETARY=es_CL.UTF-8 LC_PAPER=es_CL.UTF-8 LC_NAME=es_CL.UTF-8 LC_ADDRESS=es_CL.UTF-8 LC_TELEPHONE=es_CL.UTF-8 LC_MEASUREMENT=es_CL.UTF-8 LC_IDENTIFICATION=es_CL.UTF-8
+
 EOF
 
-# Since system services might not be fully operational in chroot,
-# consider handling the enabling of services like GDM and NetworkManager after the first reboot.
+# Exit chroot is now redundant because the EOF marks the end of the chroot commands
 
 # Unmount all partitions
 umount -R /mnt
