@@ -29,13 +29,37 @@ mkdir /mnt/boot
 mount /dev/sda1 /mnt/boot
 
 # Install base system
-pacstrap /mnt base base-devel gnome gnome-tweaks grub linux linux-firmware nano networkmanager sudo vi
+pacstrap /mnt base linux linux-firmware base-devel gnome gnome-tweaks grub nano networkmanager sudo vi
 
 # Generate fstab
 genfstab -U /mnt >> /mnt/etc/fstab
 
+# Get user inputs
+echo "Enter a hostname for your system:"
+read hostname
+echo "Enter a username for the primary user:"
+read username
+echo "Enter password for user $username:"
+read -s userpass
+echo "Enter password for root user:"
+read -s rootpass
+
 # Chroot into new system and configure further
 arch-chroot /mnt /bin/bash <<EOF
+
+# Set the hostname and network configuration
+echo "\$hostname" > /etc/hostname
+echo "127.0.0.1 localhost" >> /etc/hosts
+echo "::1       localhost" >> /etc/hosts
+echo "127.0.1.1 \$hostname.localdomain \$hostname" >> /etc/hosts
+
+# Create the new user with sudo privileges
+useradd -m -G wheel -s /bin/bash \$username
+echo "\$username:\$userpass" | chpasswd
+sed -i 's/^# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers
+
+# Set root password
+echo "root:\$rootpass" | chpasswd
 
 # Generate swap file
 fallocate -l 8G /swapfile
@@ -56,27 +80,6 @@ locale-gen
 # Set the console keyboard layout
 echo "KEYMAP=la-latin1" > /etc/vconsole.conf
 
-# Network configuration
-# Manual entry for hostname and user setup
-echo "Enter a hostname for your system:"
-read hostname
-echo "\$hostname" > /etc/hostname
-echo "127.0.0.1 localhost" >> /etc/hosts
-echo "::1       localhost" >> /etc/hosts
-echo "127.0.1.1 \$hostname.localdomain \$hostname" >> /etc/hosts
-
-# Root password
-echo "Enter password for root user:"
-passwd root
-
-# Add another user with sudo privileges
-echo "Enter a username for the primary user:"
-read username
-useradd -m -G wheel -s /bin/bash \$username
-echo "Enter password for user \$username:"
-passwd \$username
-sed -i 's/^# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers
-
 # Install and configure bootloader
 pacman -S grub --noconfirm
 grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
@@ -90,8 +93,6 @@ systemctl enable NetworkManager
 localectl set-locale LC_NUMERIC=es_CL.UTF-8 LC_TIME=es_CL.UTF-8 LC_MONETARY=es_CL.UTF-8 LC_PAPER=es_CL.UTF-8 LC_NAME=es_CL.UTF-8 LC_ADDRESS=es_CL.UTF-8 LC_TELEPHONE=es_CL.UTF-8 LC_MEASUREMENT=es_CL.UTF-8 LC_IDENTIFICATION=es_CL.UTF-8
 
 EOF
-
-# Exit chroot is now redundant because the EOF marks the end of the chroot commands
 
 # Unmount all partitions
 umount -R /mnt
