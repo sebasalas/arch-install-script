@@ -25,4 +25,4 @@ To use this script, you need:
 2. Ensure your system is connected to the internet.
 3. Download the script using:
    ```bash
-   curl -O https://raw.githubusercontent.com/username/repository/main/arch_install.sh
+   curl -O https://raw.githubusercontent.com/sebasalas/arch-installlation-script/main/arch_install.sh
