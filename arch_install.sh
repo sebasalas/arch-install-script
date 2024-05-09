@@ -29,7 +29,7 @@ mkdir /mnt/boot
 mount /dev/sda1 /mnt/boot
 
 # Install base system
-pacstrap /mnt base linux linux-firmware base-devel gnome gnome-tweaks grub nano networkmanager sudo vi
+pacstrap /mnt base linux linux-firmware base-devel gnome gnome-tweaks grub nano networkmanager sudo vi efibootmgr
 
 # Generate fstab
 genfstab -U /mnt >> /mnt/etc/fstab
