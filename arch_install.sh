@@ -70,12 +70,38 @@ echo root:holahola | chpasswd
 useradd -m -G wheel -s /bin/bash sebas
 echo sebas:holahola | chpasswd
 
-# Configure user-specific settings on first login
-echo 'if [ ! -f "$HOME/.config/gnome_initialized" ]; then
-  gsettings set org.gnome.desktop.input-sources sources "[('xkb', 'latam')]"
-  gsettings set org.gnome.system.locale region "es_CL.UTF-8"
-  touch "$HOME/.config/gnome_initialized"
-fi' >> /home/sebas/.profile
+# Create a script that configures GNOME settings
+mkdir -p /home/sebas/.config/systemd/user
+cat <<EOT > /home/sebas/set-gnome-settings.sh
+#!/bin/bash
+# Check if we're running as the expected user
+if [ "\$(whoami)" = "sebas" ]; then
+  dbus-launch --exit-with-session gsettings set org.gnome.desktop.input-sources sources "[('xkb', 'latam')]"
+  dbus-launch --exit-with-session gsettings set org.gnome.system.locale region 'es_CL.UTF-8'
+fi
+# Disable this service
+systemctl --user disable set-gnome-settings.service
+EOT
+
+chmod +x /home/sebas/set-gnome-settings.sh
+chown sebas:sebas /home/sebas/set-gnome-settings.sh
+
+# Create a systemd service file for the user
+cat <<EOT > /home/sebas/.config/systemd/user/set-gnome-settings.service
+[Unit]
+Description=Set Gnome Settings on First Login
+
+[Service]
+Type=oneshot
+ExecStart=/home/sebas/set-gnome-settings.sh
+
+[Install]
+WantedBy=default.target
+EOT
+
+# Enable the systemd service
+sudo -u sebas systemctl --user enable set-gnome-settings.service
+sudo -u sebas systemctl --user daemon-reload
 
 # Safely edit the sudoers file
 cp /etc/sudoers /etc/sudoers.bak
