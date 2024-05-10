@@ -51,6 +51,7 @@ hwclock --systohc
 # Localization
 echo "LANG=en_US.UTF-8" > /etc/locale.conf
 echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
+echo "es_CL.UTF-8 UTF-8" >> /etc/locale.gen
 locale-gen
 
 # Set the console keyboard layout
@@ -68,7 +69,11 @@ echo root:holahola | chpasswd
 # Add another user with sudo privileges
 useradd -m -G wheel -s /bin/bash sebas
 echo sebas:holahola | chpasswd
-sed -i 's/^# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers
+
+# Safely edit the sudoers file to uncomment the wheel group line
+cp /etc/sudoers /etc/sudoers.bak
+cat /etc/sudoers.bak | sed 's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' > /etc/sudoers
+visudo -c -f /etc/sudoers && echo "Sudoers file is correct" || echo "Error in sudoers file"
 
 # Install and configure bootloader
 pacman -S grub --noconfirm
@@ -80,7 +85,8 @@ systemctl enable gdm
 systemctl enable NetworkManager
 
 # Set regional formats
-localectl set-locale LC_NUMERIC=es_CL.UTF-8 LC_TIME=es_CL.UTF-8 LC_MONETARY=es_CL.UTF-8 LC_PAPER=es_CL.UTF-8 LC_NAME=es_CL.UTF-8 LC_ADDRESS=es_CL.UTF-8 LC_TELEPHONE=es_CL.UTF-8 LC_MEASUREMENT=es_CL.UTF-8 LC_IDENTIFICATION=es_CL.UTF-8
+localectl set-locale LC_TIME=es_CL.UTF-8
+localectl set-x11-keymap latam
 
 EOF
 
