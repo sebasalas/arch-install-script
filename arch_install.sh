@@ -29,7 +29,7 @@ mkdir /mnt/boot
 mount /dev/sda1 /mnt/boot
 
 # Install base system
-pacstrap /mnt base base-devel gnome gnome-tweaks grub linux linux-firmware nano networkmanager sudo vi
+pacstrap /mnt base linux linux-firmware base-devel gnome gnome-tweaks grub nano networkmanager sudo vi efibootmgr
 
 # Generate fstab
 genfstab -U /mnt >> /mnt/etc/fstab
@@ -51,7 +51,6 @@ hwclock --systohc
 # Localization
 echo "LANG=en_US.UTF-8" > /etc/locale.conf
 echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
-echo "es_CL.UTF-8 UTF-8" >> /etc/locale.gen
 locale-gen
 
 # Set the console keyboard layout
@@ -82,25 +81,14 @@ systemctl enable NetworkManager
 
 # Set regional formats
 localectl set-locale LC_NUMERIC=es_CL.UTF-8 LC_TIME=es_CL.UTF-8 LC_MONETARY=es_CL.UTF-8 LC_PAPER=es_CL.UTF-8 LC_NAME=es_CL.UTF-8 LC_ADDRESS=es_CL.UTF-8 LC_TELEPHONE=es_CL.UTF-8 LC_MEASUREMENT=es_CL.UTF-8 LC_IDENTIFICATION=es_CL.UTF-8
-loadkeys la-latin1
 
 EOF
 
-exit
-
-# Ensure no processes are using the mounted file systems
-fuser -km /mnt/boot
-fuser -km /mnt
+# Exit chroot is now redundant because the EOF marks the end of the chroot commands
 
 # Unmount all partitions
-umount /mnt/boot
-umount /mnt
-
-if mount | grep /mnt > /dev/null; then
-    echo "Some partitions are still mounted. Please check manually."
-else
-    echo "All partitions unmounted successfully."
-fi
+umount -R /mnt
+swapoff -a
 
 # Reboot
 reboot
