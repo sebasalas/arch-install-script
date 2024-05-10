@@ -29,7 +29,7 @@ mkdir /mnt/boot
 mount /dev/sda1 /mnt/boot
 
 # Install base system
-pacstrap /mnt base linux linux-firmware base-devel gnome gnome-tweaks grub nano networkmanager sudo vi efibootmgr
+pacstrap /mnt base linux linux-firmware base-devel gnome gnome-tweaks grub nano networkmanager sudo vi efibootmgr gnome-settings-daemon dconf-editor
 
 # Generate fstab
 genfstab -U /mnt >> /mnt/etc/fstab
@@ -70,9 +70,16 @@ echo root:holahola | chpasswd
 useradd -m -G wheel -s /bin/bash sebas
 echo sebas:holahola | chpasswd
 
-# Safely edit the sudoers file to uncomment the wheel group line
+# Configure user-specific settings on first login
+echo 'if [ ! -f "$HOME/.config/gnome_initialized" ]; then
+  gsettings set org.gnome.desktop.input-sources sources "[('xkb', 'latam')]"
+  gsettings set org.gnome.system.locale region "es_CL.UTF-8"
+  touch "$HOME/.config/gnome_initialized"
+fi' >> /home/sebas/.profile
+
+# Safely edit the sudoers file
 cp /etc/sudoers /etc/sudoers.bak
-cat /etc/sudoers.bak | sed 's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' > /etc/sudoers
+sed -i 's/^# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers
 visudo -c -f /etc/sudoers && echo "Sudoers file is correct" || echo "Error in sudoers file"
 
 # Install and configure bootloader
@@ -83,10 +90,6 @@ grub-mkconfig -o /boot/grub/grub.cfg
 # Enable necessary services
 systemctl enable gdm
 systemctl enable NetworkManager
-
-# Set regional formats
-localectl set-locale LC_TIME=es_CL.UTF-8
-localectl set-x11-keymap latam
 
 EOF
 
