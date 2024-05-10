@@ -72,8 +72,8 @@ echo sebas:holahola | chpasswd
 
 # Safely edit the sudoers file to uncomment the wheel group line
 cp /etc/sudoers /etc/sudoers.bak
-cat /etc/sudoers | sed 's/^# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' > /etc/sudoers.new
-visudo -c -f /etc/sudoers.new && mv /etc/sudoers.new /etc/sudoers
+cat /etc/sudoers.bak | sed 's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' > /etc/sudoers
+visudo -c -f /etc/sudoers && echo "Sudoers file is correct" || echo "Error in sudoers file"
 
 # Install and configure bootloader
 pacman -S grub --noconfirm
@@ -86,6 +86,7 @@ systemctl enable NetworkManager
 
 # Set regional formats
 localectl set-locale LC_TIME=es_CL.UTF-8
+localectl set-x11-keymap latam
 
 EOF
 
