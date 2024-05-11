@@ -14,22 +14,22 @@ timedatectl set-ntp true
 timedatectl status
 
 # Partition the disk (assuming /dev/sda)
-parted /dev/sda --script mklabel gpt
-parted /dev/sda --script mkpart ESP fat32 1MiB 1025MiB
-parted /dev/sda --script set 1 esp on
-parted /dev/sda --script mkpart primary ext4 1025MiB 100%
+# parted /dev/sda --script mklabel gpt
+# parted /dev/sda --script mkpart ESP fat32 1MiB 1025MiB
+# parted /dev/sda --script set 1 esp on
+# parted /dev/sda --script mkpart primary ext4 1025MiB 100%
 
 # Format the partitions
-mkfs.fat -F32 /dev/sda1
-mkfs.ext4 /dev/sda2
+mkfs.fat -F32 /dev/sda2
+mkfs.ext4 /dev/sda3
 
 # Mount the file systems
-mount /dev/sda2 /mnt
+mount /dev/sda3 /mnt
 mkdir /mnt/boot
-mount /dev/sda1 /mnt/boot
+mount /dev/sda2 /mnt/boot
 
 # Install base system
-pacstrap /mnt base linux linux-firmware base-devel gnome gnome-tweaks grub nano networkmanager sudo vi efibootmgr gnome-settings-daemon dconf-editor
+pacstrap /mnt base linux linux-firmware base-devel gnome gnome-tweaks grub nano networkmanager sudo vi efibootmgr
 
 # Generate fstab
 genfstab -U /mnt >> /mnt/etc/fstab
@@ -70,42 +70,9 @@ echo root:holahola | chpasswd
 useradd -m -G wheel -s /bin/bash sebas
 echo sebas:holahola | chpasswd
 
-# Create a script that configures GNOME settings
-mkdir -p /home/sebas/.config/systemd/user
-cat <<EOT > /home/sebas/set-gnome-settings.sh
-#!/bin/bash
-# Check if we're running as the expected user
-if [ "\$(whoami)" = "sebas" ]; then
-  dbus-launch --exit-with-session gsettings set org.gnome.desktop.input-sources sources "[('xkb', 'latam')]"
-  dbus-launch --exit-with-session gsettings set org.gnome.system.locale region 'es_CL.UTF-8'
-fi
-# Disable this service
-systemctl --user disable set-gnome-settings.service
-EOT
-
-chmod +x /home/sebas/set-gnome-settings.sh
-chown sebas:sebas /home/sebas/set-gnome-settings.sh
-
-# Create a systemd service file for the user
-cat <<EOT > /home/sebas/.config/systemd/user/set-gnome-settings.service
-[Unit]
-Description=Set Gnome Settings on First Login
-
-[Service]
-Type=oneshot
-ExecStart=/home/sebas/set-gnome-settings.sh
-
-[Install]
-WantedBy=default.target
-EOT
-
-# Enable the systemd service
-sudo -u sebas systemctl --user enable set-gnome-settings.service
-sudo -u sebas systemctl --user daemon-reload
-
-# Safely edit the sudoers file
+# Safely edit the sudoers file to uncomment the wheel group line
 cp /etc/sudoers /etc/sudoers.bak
-sed -i 's/^# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers
+cat /etc/sudoers.bak | sed 's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' > /etc/sudoers
 visudo -c -f /etc/sudoers && echo "Sudoers file is correct" || echo "Error in sudoers file"
 
 # Install and configure bootloader
@@ -116,6 +83,10 @@ grub-mkconfig -o /boot/grub/grub.cfg
 # Enable necessary services
 systemctl enable gdm
 systemctl enable NetworkManager
+
+# Set regional formats
+localectl set-locale LC_TIME=es_CL.UTF-8
+localectl set-x11-keymap latam
 
 EOF
 
