@@ -14,19 +14,19 @@ timedatectl set-ntp true
 timedatectl status
 
 # Partition the disk (assuming /dev/sda)
-parted /dev/sda --script mklabel gpt
-parted /dev/sda --script mkpart ESP fat32 1MiB 1025MiB
-parted /dev/sda --script set 1 esp on
-parted /dev/sda --script mkpart primary ext4 1025MiB 100%
+# parted /dev/sda --script mklabel gpt
+# parted /dev/sda --script mkpart ESP fat32 1MiB 1025MiB
+# parted /dev/sda --script set 1 esp on
+# parted /dev/sda --script mkpart primary ext4 1025MiB 100%
 
 # Format the partitions
-mkfs.fat -F32 /dev/sda1
-mkfs.ext4 /dev/sda2
+mkfs.fat -F32 /dev/sda2
+mkfs.ext4 /dev/sda3
 
 # Mount the file systems
-mount /dev/sda2 /mnt
+mount /dev/sda3 /mnt
 mkdir /mnt/boot
-mount /dev/sda1 /mnt/boot
+mount /dev/sda2 /mnt/boot
 
 # Install base system
 pacstrap /mnt base linux linux-firmware base-devel gnome gnome-tweaks grub nano networkmanager sudo vi efibootmgr
