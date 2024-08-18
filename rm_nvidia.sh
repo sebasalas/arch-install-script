@@ -19,6 +19,12 @@ pacman -Rns --noconfirm nvidia nvidia-utils nvidia-settings
 # Remove existing Xorg configuration if any
 rm -f /etc/X11/xorg.conf
 
+# Remove blacklist-nouveau if any
+rm -f /etc/modprobe.d/blacklist-nouveau.conf
+
+# Remove nvidia modprobe if any
+rm -f /etc/modprobe.d/nvidia.conf
+
 # Regenerate initramfs
 mkinitcpio -P
 
