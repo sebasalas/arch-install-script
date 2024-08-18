@@ -26,7 +26,12 @@ rm -f /etc/modprobe.d/blacklist-nouveau.conf
 rm -f /etc/modprobe.d/nvidia.conf
 
 # Regenerate initramfs
+cp /etc/mkinitcpio.bak /etc/mkinitcpio.conf
 mkinitcpio -P
+
+# Regenerate GRUB
+cp /etc/default/grub.bak /etc/default/grub
+grub-mkconfig -o /boot/grub/grub.cfg
 
 # Install nouveau driver
 pacman -S --noconfirm xf86-video-nouveau
