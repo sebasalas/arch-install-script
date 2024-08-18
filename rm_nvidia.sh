@@ -14,7 +14,7 @@ mount /dev/sda1 /mnt/boot
 arch-chroot /mnt /bin/bash <<EOF
 
 # Remove NVIDIA drivers
-pacman -Rns --noconfirm nvidia nvidia-utils nvidia-settings
+pacman -Rns --noconfirm nvidia nvidia-utils nvidia-settings nvidia-dkms
 
 # Remove existing Xorg configuration if any
 rm -f /etc/X11/xorg.conf
