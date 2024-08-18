@@ -21,6 +21,7 @@ rm -f /etc/X11/xorg.conf
 
 # Remove blacklist-nouveau if any
 rm -f /etc/modprobe.d/blacklist-nouveau.conf
+rm -f /etc/modprobe.d/nouveau.conf
 
 # Remove nvidia modprobe if any
 rm -f /etc/modprobe.d/nvidia.conf
