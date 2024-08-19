@@ -29,6 +29,8 @@ rm -f /etc/modprobe.d/nouveau.conf
 # Remove nvidia modprobe if any
 rm -f /etc/modprobe.d/nvidia.conf
 
+cp /etc/environment.bak /etc/environment
+
 # Regenerate initramfs
 cp /etc/mkinitcpio.bak /etc/mkinitcpio.conf
 mkinitcpio -P
