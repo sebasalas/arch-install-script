@@ -13,6 +13,7 @@ loadkeys la-latin1
 timedatectl set-ntp true
 timedatectl status
 
+
 # Partition the disk (assuming /dev/sda)
 #parted /dev/sda --script mklabel gpt
 #parted /dev/sda --script mkpart ESP fat32 1MiB 1025MiB
