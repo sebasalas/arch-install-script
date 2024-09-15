@@ -14,10 +14,10 @@ timedatectl set-ntp true
 timedatectl status
 
 # Partition the disk (assuming /dev/sda)
-parted /dev/sda --script mklabel gpt
-parted /dev/sda --script mkpart ESP fat32 1MiB 1025MiB
-parted /dev/sda --script set 1 esp on
-parted /dev/sda --script mkpart primary ext4 1025MiB 100%
+#parted /dev/sda --script mklabel gpt
+#parted /dev/sda --script mkpart ESP fat32 1MiB 1025MiB
+#parted /dev/sda --script set 1 esp on
+#parted /dev/sda --script mkpart primary ext4 1025MiB 100%
 
 # Format the partitions
 mkfs.fat -F32 /dev/sda1
